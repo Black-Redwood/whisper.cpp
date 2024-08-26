@@ -15,6 +15,9 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
         post_data = self.rfile.read(content_length)
         request_body = json.loads(post_data)
 
+        # Log the received POST data
+        print(f"Received POST data: {json.dumps(request_body, indent=2)}", flush=True)
+
         # Set the response header
         self.send_response(200)
         self.send_header("Content-type", "application/json")
@@ -32,7 +35,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             for line in iter(transcribe_process.stdout.readline, b''):
                 self.wfile.write(line)
                 self.wfile.flush()
-                print(line.decode('utf-8'), end='')
+                print(line.decode('utf-8'), end='', flush=True)
 
             transcribe_process.stdout.close()
             transcribe_process.wait()
@@ -43,10 +46,10 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
 
 def signal_handler(sig, frame):
     global transcribe_process
-    print('Server is shutting down...')
+    print('Server is shutting down...', flush=True)
 
     if transcribe_process is not None:
-        print('Killing transcribe process...')
+        print('Killing transcribe process...', flush=True)
         transcribe_process.terminate()
         transcribe_process.wait()
 
@@ -55,7 +58,7 @@ def signal_handler(sig, frame):
 def run(server_class=HTTPServer, handler_class=SimpleHTTPRequestHandler, port=3456):
     server_address = ('', port)
     httpd = server_class(server_address, handler_class)
-    print(f"Server running on port {port}")
+    print(f"Server running on port {port}", flush=True)
 
     # Register the signal handler for termination signals
     signal.signal(signal.SIGINT, signal_handler)
